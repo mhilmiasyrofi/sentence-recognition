@@ -1,0 +1,8 @@
+Shapely
+Flask
+matplotlib
+scipy
+plumbum
+numpy
+ipython
+Pillow
