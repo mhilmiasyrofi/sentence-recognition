@@ -13,3 +13,9 @@ Pillow
 
 # see library
 chainer
+
+
+# bluetooth conn
+asyncio
+## note this must use root previlage
+evdev
