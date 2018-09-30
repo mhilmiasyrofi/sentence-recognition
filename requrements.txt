@@ -1,0 +1,15 @@
+tensorflow
+jupyter
+matplotlib
+opencv-python
+
+# east library
+# sudo apt-get install python3-tk
+Shapely
+scipy
+plumbum
+ipython
+Pillow
+
+# see library
+chainer
