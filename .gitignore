@@ -46,3 +46,5 @@ package-lock.json
 /east_icdar2015_resnet_v1_50_rbox/model.ckpt-49491.data-00000-of-00001
 
 .vscode/
+
+/audio/*
