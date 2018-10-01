@@ -296,6 +296,7 @@ async def main(args):
     # Hacking, Changing the constants!
     WAIT_TIME = args.wait
     TRIES = args.tries
+    # print(TRIES)
 
     exit_future = asyncio.Future()
     transport, protocol = await asyncio.get_event_loop().subprocess_exec(
@@ -304,18 +305,27 @@ async def main(args):
 
     try:
 
-        if mac is None:
-            mac, _ = await protocol.select_paired_device()
+        # if mac is None:
+        #     mac, _ = await protocol.select_paired_device()
 
+        # print(mac)
+        # mac = mac.split(':' if ':' in mac else '_')
+        # print('Device MAC: %s' % ':'.join(mac))
+
+        # device_id = await find_dev_id(mac, fail_safe=True)
+        # if device_id is None:
+        #     print('It seems device: %s is not connected yet, trying to connect.' % ':'.join(mac))
+        #     await protocol.trust(mac)
+        #     await protocol.connect(mac)
+        #     device_id = await find_dev_id(mac)
+
+        device_id = "bluez_card.49_37_12_11_1C_B4"
+        mac = "49:37:12:11:1C:B4"
         mac = mac.split(':' if ':' in mac else '_')
-        print('Device MAC: %s' % ':'.join(mac))
-
-        device_id = await find_dev_id(mac, fail_safe=True)
-        if device_id is None:
-            print('It seems device: %s is not connected yet, trying to connect.' % ':'.join(mac))
-            await protocol.trust(mac)
-            await protocol.connect(mac)
-            device_id = await find_dev_id(mac)
+        
+        await protocol.trust(mac)
+        await protocol.connect(mac)
+        device_id = await find_dev_id(mac)
 
         sink = await find_sink(mac, fail_safe=True)
         if sink is None:
@@ -336,6 +346,7 @@ async def main(args):
             await protocol.connect(mac)
 
         device_id = await find_dev_id(mac)
+
         print('Device ID: %s' % device_id)
 
         await wait(2)
