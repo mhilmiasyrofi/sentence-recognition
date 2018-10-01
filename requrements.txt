@@ -3,7 +3,7 @@ jupyter
 matplotlib
 opencv-python
 
-# east library
+### east library
 # sudo apt-get install python3-tk
 Shapely
 scipy
@@ -11,11 +11,15 @@ plumbum
 ipython
 Pillow
 
-# see library
+### see library
 chainer
 
 
-# bluetooth conn
+### bluetooth conn
 asyncio
 ## note this must use root previlage
 evdev
+
+### text to speech
+# sudo apt-get install mpg321
+gTTS
