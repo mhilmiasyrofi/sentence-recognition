@@ -344,16 +344,6 @@ def predict_see(image):
     return word
 
 
-im_name = "images/mysample.png"
-# im_name = "images/check.png"
-# im_name = "images/street1.jpg"
-
-img = cv2.imread(im_name)
-img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-rst = predictor(img)
-bbox = get_boxes_east(rst)
-
-
 class BoundingBox:
     x1 = 0
     x2 = 0
@@ -373,79 +363,94 @@ class BoundingBox:
     def __str__(self):
         return "" + str(self.x1) + ", " + str(self.x2) + ", " + str(self.y1) + ", " + str(self.y2) + ", " + str(self.width) + ", " + str(self.height) + "\n"
 
+def get_bounding_box_of_sentence(bbox):
+    data = []
+    for b in bbox:
+        y1 = int(b[0])
+        y2 = int(b[2])
+        x1 = int(b[1])
+        x2 = int(b[3])
+        box = BoundingBox(x1, x2, y1, y2)
+        data.append(box)
 
-data = []
-for b in bbox:
-    y1 = int(b[0])
-    y2 = int(b[2])
-    x1 = int(b[1])
-    x2 = int(b[3])
-    box = BoundingBox(x1, x2, y1, y2)
-    data.append(box)
+    data.sort(key=operator.attrgetter("x1"))
 
-data.sort(key=operator.attrgetter("x1"))
+    sentences = []
+    sentence = []
+    threshold = 0
+    if len(data) > 0:
+        sentence.append(data[0])
+        upper_threshold = data[0].x1
+        lower_threshold = data[0].x2
+        interval_threshold = data[0].height/2
+        for i in range(1, len(data)):
+            if abs(data[i].x1 - upper_threshold) < interval_threshold or abs(data[i].x2 - lower_threshold) < interval_threshold:
+                sentence.append(data[i])
+            else:
+                sentences.append(sentence)
+                sentence = []
+                upper_threshold = data[i].x1
+                lower_threshold = data[i].x2
+                interval_threshold = data[i].height/2
+                sentence.append(data[i])
+        sentences.append(sentence)
 
-sentences = []
-sentence = []
-threshold = 0
-if len(data) > 0:
-    sentence.append(data[0])
-    upper_threshold = data[0].x1
-    lower_threshold = data[0].x2
-    interval_threshold = data[0].height/2
-    for i in range(1, len(data)):
-        if abs(data[i].x1 - upper_threshold) < interval_threshold or abs(data[i].x2 - lower_threshold) < interval_threshold:
-            sentence.append(data[i])
-        else:
-            sentences.append(sentence)
-            sentence = []
-            upper_threshold = data[i].x1
-            lower_threshold = data[i].x2
-            interval_threshold = data[i].height/2
-            sentence.append(data[i])
-    sentences.append(sentence)
-
-## urutin sesuai Y
-for s in sentences:
-    s.sort(key=operator.attrgetter("y1"))
-
-
-## gabungin jika masih sesuai
-idx = []
-for i in range(1, len(sentences)):
-    # and abs(sentences[i-1][0].x2 - sentences[i][0].x1) < sentences[i-1][0].height :
-    if abs(sentences[i-1][0].height - sentences[i][0].height) < sentences[i][0].height / 3:
-        idx.append(i)
+    ## urutin sesuai Y
+    for s in sentences:
+        s.sort(key=operator.attrgetter("y1"))
 
 
-count = 0
-for i in idx:
-    for s in sentences[i-count]:
-        sentences[i-1-count].append(s)
-    del sentences[i-count]
-    count += 1
+    ## gabungin jika masih sesuai
+    idx = []
+    for i in range(1, len(sentences)):
+        # and abs(sentences[i-1][0].x2 - sentences[i][0].x1) < sentences[i-1][0].height :
+        if abs(sentences[i-1][0].height - sentences[i][0].height) < sentences[i][0].height / 3:
+            idx.append(i)
 
+
+    count = 0
+    for i in idx:
+        for s in sentences[i-count]:
+            sentences[i-1-count].append(s)
+        del sentences[i-count]
+        count += 1
+
+
+    img = cv2.imread(im_name)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+    document_img = [[]]
+    sentence_img = []
+
+    for s in sentences:
+        for k in s:
+            crop_img = img[k.x1:k.x2, k.y1:k.y2]
+            sentence_img.append(crop_img)
+        document_img.append(sentence_img)
+        sentence_img = []
+
+    return document_img
+
+def recognize(image):
+    rst = predictor(img)
+    bbox = get_boxes_east(rst)
+    document_imgs = get_bounding_box_of_sentence(bbox)
+
+    result = []
+    kalimat = ""
+
+    for s in document_imgs:
+        for i in s:
+            kalimat += predict_see(i) + " "
+        result.append(kalimat)
+        kalimat = ""
+    print(result)
+
+
+im_name = "images/mysample.png"
+# im_name = "images/check.png"
+# im_name = "images/street1.jpg"
 
 img = cv2.imread(im_name)
 img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-
-document_img = [[]]
-sentence_img = []
-
-for s in sentences:
-    for k in s:
-        crop_img = img[k.x1:k.x2, k.y1:k.y2]
-        sentence_img.append(crop_img)
-    document_img.append(sentence_img)
-    sentence_img = []
-
-result = []
-kalimat = ""
-
-for s in document_img:
-    for i in s:
-        kalimat += predict_see(i) + " "
-    result.append(kalimat)
-    kalimat = ""
-
-print(result)
+recognize(img)
