@@ -7,7 +7,16 @@ from evdev import InputDevice, categorize, ecodes
 import datetime
 
 devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
-dev = InputDevice('/dev/input/event' + str(len(devices)-4))
+inputname = None
+for device in devices:
+    print(device.path, device.name, device.phys)
+    if str(device.name) == "49:37:12:11:1C:B4" :
+        inputname = device.path
+if inputname == None :
+    print("Headset Bluetooth tidak ditemukan")
+    exit()
+
+dev = InputDevice(inputname)
 
 import numpy as np
 import cv2

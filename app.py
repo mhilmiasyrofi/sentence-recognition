@@ -431,7 +431,25 @@ def get_bounding_box_of_sentence(bbox, img):
 
     return document_img
 
+### SPEAK WORD
+from gtts import gTTS
+import os
+def speakWord(teks) :
+    tts = gTTS(text=teks, lang='id')
+    tts.save("audio/output.mp3")
+    os.system("mpg321 audio/output.mp3")
+
+def resizeImage(img) :
+    scale_percent = 50 # percent of original size
+    width = int(img.shape[1] * scale_percent / 100)
+    height = int(img.shape[0] * scale_percent / 100)
+    dim = (width, height)
+    # resize image
+    resized = cv2.resize(img, dim, interpolation = cv2.INTER_AREA)
+    return resized
+
 def recognize(image):
+    image = resizeImage(image)
     image_copy = image
     rst = predictor(image)
     bbox = get_boxes_east(rst)
@@ -447,6 +465,9 @@ def recognize(image):
         kalimat = ""
     print(result)
 
+    for r in result :
+        if r != None and r != "":
+            speakWord(r)
 
 # im_name = "images/mysample.png"
 # # im_name = "images/check.png"
@@ -465,7 +486,16 @@ from evdev import InputDevice, categorize, ecodes
 import datetime
 
 devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
-dev = InputDevice('/dev/input/event' + str(len(devices)-4))
+inputname = None
+for device in devices:
+    # print(device.path, device.name, device.phys)
+    if str(device.name) == "49:37:12:11:1C:B4" :
+        inputname = device.path
+if inputname == None :
+    speakWord("Headset Bluetooth tidak ditemukan")
+    exit()
+
+dev = InputDevice(inputname)
 
 import numpy as np
 import cv2
